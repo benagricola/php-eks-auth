@@ -1,5 +1,5 @@
 <?php
-namespace EKS;
+namespace EKSAuth\Client;
 
 use Aws\EKS\EKSClient;
 use Aws\Credentials\CredentialProvider;
@@ -8,11 +8,10 @@ use GuzzleHttp\Client as HTTPClient;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
-use Maclof\Kubernetes\Client as K8SClient;
 
-use HTTPMiddleware\DynamicCertificate;
+use EKSAuth\HTTPMiddleware\DynamicCertificate;
 
-class ClientFactory
+class Factory
 {
     protected $clusters = [];
     protected $stack;
@@ -55,7 +54,10 @@ class ClientFactory
         return 'k8s-aws-v1.' . str_replace('=','', strtr(base64_encode($request->getUri()), '+/','-_'));
     }
 
-    public function get(string $clusterName, string $region): K8SClient
+    // Pass an EKS cluster name, region and a function that takes a
+    // single argument $httpClient and returns a new instance of your desired
+    // Kubernetes client library.
+    public function getClient(string $clusterName, string $region, callable $clientFunc)
     {
         $cluster = $this->lookupCluster($clusterName, $region);
         $token = $this->generateToken($clusterName, $region);
@@ -68,6 +70,6 @@ class ClientFactory
             'handler' => $this->stack,
             'cacert' => $cluster['cert'],
         ]);
-        return new K8SClient([], $httpClient);
+        return $clientFunc($httpClient);
     }
 }

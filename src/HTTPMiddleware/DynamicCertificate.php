@@ -1,5 +1,5 @@
 <?php
-namespace HTTPMiddleware;
+namespace EKSAuth\HTTPMiddleware;
 
 use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\RequestInterface;
