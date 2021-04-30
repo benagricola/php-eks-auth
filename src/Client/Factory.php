@@ -4,6 +4,7 @@ namespace EKSAuth\Client;
 use Aws\EKS\EKSClient;
 use Aws\Credentials\CredentialProvider;
 use Aws\Signature\SignatureV4;
+use Aws\Eks\Exception;
 use GuzzleHttp\Client as HTTPClient;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
@@ -17,9 +18,9 @@ class Factory
     protected $stack;
     protected $awsCredProvider;
 
-    public function __construct($awsCredProvider)
+    public function __construct($awsCredProvider = null)
     {
-        if (isset($awsCredProvider)) {
+        if ($awsCredProvider != null) {
             $this->awsCredProvider = $awsCredProvider;
         } else {
             $this->awsCredProvider = CredentialProvider::defaultProvider();
@@ -33,7 +34,6 @@ class Factory
         if (!isset($this->clusters[$name])) {
             $eksClient = new EKSClient(['region' => $region, 'version' => '2017-11-01']);
             $cluster = $eksClient->describeCluster(['name' => $name])['cluster'];
-
             return $this->clusters[$name] = [
                 'endpoint' => $cluster['endpoint'],
                 'cert' => base64_decode($cluster['certificateAuthority']['data']),
