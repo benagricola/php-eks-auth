@@ -4,6 +4,12 @@
     "keywords": ["kubernetes","aws","eks","aws-eks"],
     "homepage": "https://github.com/benagricola/php-eks-auth",
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Ben Agricola",
+            "homepage": "https://ben.agrico.la"
+        }
+    ],
     "description": "Provides a pre-authenticated HTTPClient for consumption by existing PHP Kubernetes Client libraries",
     "suggest": {
         "maclof/kubernetes-client": "^0.21.0",
