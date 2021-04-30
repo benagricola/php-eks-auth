@@ -24,7 +24,7 @@ class ClientFactory
         $this->stack->push(DynamicCertificate::Handler());
     }
 
-    private function lookupCluster(string $name, string $region): array {
+    protected function lookupCluster(string $name, string $region): array {
         if(!isset($this->clusters[$name])) {
             $eksClient = new EKSClient(['region' => $region, 'version' => '2017-11-01']);
             $cluster = $eksClient->describeCluster(['name' => $name])['cluster'];
@@ -39,15 +39,12 @@ class ClientFactory
         }
     }
 
-    private function generateToken(string $name, string $region): string {
-        
+    protected function generateToken(string $name, string $region): string {
         $signer = new SignatureV4('sts', $region);
-        
         $uri = Uri::withQueryValues(new Uri("https://sts.${region}.amazonaws.com/"), [
             'Action' => 'GetCallerIdentity', 
             'Version' => '2011-06-15'
         ]);
-        
         $psReq = new Request('GET', $uri, [
             'x-k8s-aws-id' => $name,
         ]);

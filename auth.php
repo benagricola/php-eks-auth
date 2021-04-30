@@ -29,6 +29,11 @@ try {
         echo "Namespace: " . $ns->getJsonPath('$.metadata.name')[0] . PHP_EOL;
     }
 
+    $pods = $k8s->pods()->find();
+    foreach ($pods as $pod) {
+        echo "Pod: " . $pod->getJsonPath('$.metadata.name')[0] . PHP_EOL;
+    }
+
 } catch (BadRequestException $e) {
     printf("Error retrieving namespaces: %s", $e);
 }
