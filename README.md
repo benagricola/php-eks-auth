@@ -37,5 +37,7 @@ $namespaces = $k8s->namespaces()->find();
 ...
 ```
 
+Note: This library only catches and re-throws an error when the requested cluster does not exist. You should wrap the `ClientFactory->getClient()` call in a `try{} catch(Exception $e){}` block to avoid throwing all sorts of errors from the underlying libraries.
+
 ## Contributing
-Submit a pull request. I'm not a PHP dev so the codebase has no tests 
+Submit a pull request. I'm not a PHP dev so the codebase has no tests.

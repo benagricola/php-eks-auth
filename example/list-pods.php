@@ -1,8 +1,12 @@
 <?php
 require __DIR__.'/../vendor/autoload.php';
 
-// This script uses a maclof/kubernetes-client instance
-// to query namespaces and pods on the given EKS cluster.
+// NOTE: The library itself does not require maclof/kubernetes-client
+// as this may not be the library chosen by the user. To get this
+// script to work, you will need to run:
+//
+// composer require maclof/kubernetes-client
+
 // Any Kubernetes client can be used, as long as it can 
 // accept a \GuzzleHttp\Client instance.
 use EKSAuth\Client\Factory as ClientFactory;
@@ -34,9 +38,14 @@ $cf = new ClientFactory();
 // We pass our own function that instantiates a new 
 // Maclof\Kubernetes\Client instance with the
 // pre-configured \GuzzleHttp\Client.
-$k8s = $cf->getClient($clusterName, $region, function($httpClient) {
-    return new Client([], $httpClient);
-});
+try {
+    $k8s = $cf->getClient($clusterName, $region, function($httpClient) {
+        return new Client([], $httpClient);
+    });
+} catch(Exception $e) {
+    ll($e->getMessage());
+    exit(126);
+}
 
 
 // Use the new client to list namespaces and the pods in them.

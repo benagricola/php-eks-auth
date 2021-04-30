@@ -4,13 +4,17 @@ namespace EKSAuth\Client;
 use Aws\EKS\EKSClient;
 use Aws\Credentials\CredentialProvider;
 use Aws\Signature\SignatureV4;
-use Aws\Eks\Exception;
+use Aws\Eks\Exception\EKSException;
 use GuzzleHttp\Client as HTTPClient;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
 
 use EKSAuth\HTTPMiddleware\DynamicCertificate;
+
+class ClusterNotFound extends \Exception
+{
+}
 
 class Factory
 {
@@ -33,7 +37,14 @@ class Factory
     {
         if (!isset($this->clusters[$name])) {
             $eksClient = new EKSClient(['region' => $region, 'version' => '2017-11-01']);
-            $cluster = $eksClient->describeCluster(['name' => $name])['cluster'];
+            try {
+                $cluster = $eksClient->describeCluster(['name' => $name])['cluster'];
+            } catch (EKSException $e) {
+                if ($e->getAwsErrorCode() == 'ResourceNotFoundException') {
+                    throw new ClusterNotFound(sprintf("Cluster %s/%s does not exist.", $region, $name));
+                }
+                throw $e;
+            }
             return $this->clusters[$name] = [
                 'endpoint' => $cluster['endpoint'],
                 'cert' => base64_decode($cluster['certificateAuthority']['data']),
