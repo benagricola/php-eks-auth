@@ -10,14 +10,15 @@ use Psr\Http\Message\ResponseInterface;
 // the 'verify' option before running the request.
 // This allows us to load certificate data on the fly without
 // storing it forever on the filesystem.
-class DynamicCertificate {
+class DynamicCertificate
+{
     public static function Handler(string $optionName = 'cacert')
     {
         return function (callable $handler) use ($optionName) {
             return function (RequestInterface $request, array $options) use ($handler, $optionName) {
                 // If cert data is given, write it out to a temporary file
 
-                if(isset($options[$optionName])) {
+                if (isset($options[$optionName])) {
                     $tmpfn = tempnam(sys_get_temp_dir(), 'eks-tmp-ca');
                     file_put_contents($tmpfn, $options[$optionName]);
                     $options['verify'] = $tmpfn;

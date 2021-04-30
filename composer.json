@@ -9,5 +9,8 @@
     },
     "autoload": {
         "psr-4": {"EKSAuth\\": "src/"}
+    },
+    "require-dev": {
+        "overtrue/phplint": "^2.3"
     }
 }

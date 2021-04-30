@@ -17,14 +17,20 @@ class Factory
     protected $stack;
     protected $awsCredProvider;
 
-    public function __construct() {
-        $this->awsCredProvider = CredentialProvider::defaultProvider();
+    public function __construct($awsCredProvider)
+    {
+        if (isset($awsCredProvider)) {
+            $this->awsCredProvider = $awsCredProvider;
+        } else {
+            $this->awsCredProvider = CredentialProvider::defaultProvider();
+        }
         $this->stack = HandlerStack::create();
         $this->stack->push(DynamicCertificate::Handler());
     }
 
-    protected function lookupCluster(string $name, string $region): array {
-        if(!isset($this->clusters[$name])) {
+    protected function lookupCluster(string $name, string $region): array
+    {
+        if (!isset($this->clusters[$name])) {
             $eksClient = new EKSClient(['region' => $region, 'version' => '2017-11-01']);
             $cluster = $eksClient->describeCluster(['name' => $name])['cluster'];
 
@@ -32,16 +38,16 @@ class Factory
                 'endpoint' => $cluster['endpoint'],
                 'cert' => base64_decode($cluster['certificateAuthority']['data']),
             ];
-
         } else {
             return $this->clusters[$name];
         }
     }
 
-    protected function generateToken(string $name, string $region): string {
+    protected function generateToken(string $name, string $region): string
+    {
         $signer = new SignatureV4('sts', $region);
         $uri = Uri::withQueryValues(new Uri("https://sts.${region}.amazonaws.com/"), [
-            'Action' => 'GetCallerIdentity', 
+            'Action' => 'GetCallerIdentity',
             'Version' => '2011-06-15'
         ]);
         $psReq = new Request('GET', $uri, [
@@ -51,7 +57,7 @@ class Factory
         // NOTE: If you set the pre-sign validity too high, the authentication
         // will be rejected! The limit appears to be around 15 minutes.
         $request = $signer->presign($psReq, ($this->awsCredProvider)()->wait(), '+10 minutes');
-        return 'k8s-aws-v1.' . str_replace('=','', strtr(base64_encode($request->getUri()), '+/','-_'));
+        return 'k8s-aws-v1.' . str_replace('=', '', strtr(base64_encode($request->getUri()), '+/', '-_'));
     }
 
     // Pass an EKS cluster name, region and a function that takes a
@@ -63,7 +69,7 @@ class Factory
         $token = $this->generateToken($clusterName, $region);
         
         $httpClient = new HTTPClient([
-            'base_uri' => $cluster['endpoint'], 
+            'base_uri' => $cluster['endpoint'],
             'headers' => [
                 'Authorization' => 'Bearer ' . $token,
             ],
