@@ -12,6 +12,13 @@ The temporary certificate file is created and deleted on every request so does n
 
 ## Usage
 
+Require it:
+
+```bash
+composer require benagricola/eks-auth
+```
+
+Then use it in your project:
 ```php
 use EKSAuth\Client\Factory as ClientFactory;
 
